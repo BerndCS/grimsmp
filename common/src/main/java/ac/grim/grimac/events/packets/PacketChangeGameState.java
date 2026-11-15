@@ -1,7 +1,7 @@
 package ac.grim.grimac.events.packets;
 
 import ac.grim.grimac.GrimAPI;
-import ac.grim.grimac.checks.Check;
+import ac.grim.grimac.checks.GrimProcessor;
 import ac.grim.grimac.checks.type.PacketSendListener;
 import ac.grim.grimac.player.GrimPlayer;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
@@ -10,14 +10,16 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerChangeGameState;
+import org.jetbrains.annotations.NotNull;
 
-public class PacketChangeGameState extends Check implements PacketSendListener {
+public class PacketChangeGameState extends GrimProcessor implements PacketSendListener {
+
     public PacketChangeGameState(GrimPlayer player) {
         super(player);
     }
 
     @Override
-    public void onPacketSend(final PacketSendEvent event) {
+    public void onPacketSend(final @NotNull PacketSendEvent event) {
         if (event.getPacketType() != PacketType.Play.Server.CHANGE_GAME_STATE) return;
         WrapperPlayServerChangeGameState packet = new WrapperPlayServerChangeGameState(event);
 
@@ -26,7 +28,6 @@ public class PacketChangeGameState extends Check implements PacketSendListener {
                 player.sendTransaction();
 
                 player.latencyUtils.addRealTimeTask(player.lastTransactionSent.get(), () -> {
-                    // Bukkit's gamemode order is unreliable, so go from int -> packetevents -> bukkit
                     GameMode previous = player.gamemode;
                     int gamemode = (int) packet.getValue();
 
